@@ -1,0 +1,3 @@
+# To apply on top of avrdude-6.3.tar.gz
+
+d2000-base.patch

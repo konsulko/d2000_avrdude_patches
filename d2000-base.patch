@@ -1,0 +1,111 @@
+diff --git a/avrdude.conf.in b/avrdude.conf.in
+index 63c1ac9..c52c82f 100644
+--- a/avrdude.conf.in
++++ b/avrdude.conf.in
+@@ -894,7 +894,7 @@ programmer
+   type  = "butterfly";
+   connection_type = serial;
+ ;
+- 
++
+ # suggested in http://forum.mikrokopter.de/topic-post48317.html
+ programmer
+   id    = "mkbutterfly";
+@@ -908,6 +908,13 @@ programmer parent "mkbutterfly"
+ ;
+ 
+ programmer
++  id    = "quarkv1";
++  desc  = "Intel D2000 Evaluation Board Kit";
++  type  = "quarkv1";
++  connection_type = serial;
++;
++
++programmer
+   id    = "jtagmkI";
+   desc  = "Atmel JTAG ICE (mkI)";
+   baudrate = 115200;    # default is 115200
+@@ -14971,4 +14978,31 @@ part
+     ;
+ ;
+ 
++part
++    id               = "d2000evk";
++    desc             = "Intel D2000 EVK";
++    has_jtag         = yes;
++    avr910_devcode   = 0xf3;
++    signature        = 0xDE 0xAD 0xBE;
++    chip_erase_delay = 9000;
++    pagel            = 0xD7;
++    bs2              = 0xA0;
++    reset            = dedicated;
++    pgm_enable       = "1 0 1 0  1 1 0 0    0 1 0 1  0 0 1 1",
++                       "x x x x  x x x x    x x x x  x x x x";
++
++    chip_erase       = "1 0 1 0  1 1 0 0    1 0 0 0  0 0 0 0",
++                       "x x x x  x x x x    x x x x  x x x x";
++
++    timeout		= 200;
++    stabdelay		= 100;
++    cmdexedelay		= 25;
++    synchloops		= 32;
++    bytedelay		= 0;
++    pollindex		= 3;
++    pollvalue		= 0x53;
++    predelay		= 1;
++    postdelay		= 1;
++    pollmethod		= 0;
++;
+ 
+diff --git a/butterfly.c b/butterfly.c
+index fadf708..32fe96a 100644
+--- a/butterfly.c
++++ b/butterfly.c
+@@ -205,6 +205,7 @@ static void butterfly_powerdown(PROGRAMMER * pgm)
+ }
+ 
+ #define IS_BUTTERFLY_MK 0x0001
++#define IS_BUTTERFLY_QUARK 0x0002
+ 
+ /*
+  * initialize the AVR device and prepare it to accept commands
+@@ -760,3 +761,12 @@ void butterfly_mk_initpgm(PROGRAMMER * pgm)
+   strcpy(pgm->type, "butterfly_mk");
+   pgm->flag = IS_BUTTERFLY_MK;
+ }
++
++const char quarkv1_desc[] = "Intel Quark EVK";
++
++void quarkv1_initpgm(PROGRAMMER * pgm)
++{
++  butterfly_initpgm(pgm);
++  strcpy(pgm->type, "quarkv1");
++  pgm->flag = IS_BUTTERFLY_QUARK;
++}
+diff --git a/butterfly.h b/butterfly.h
+index e057e03..63aaa2a 100644
+--- a/butterfly.h
++++ b/butterfly.h
+@@ -27,8 +27,10 @@ extern "C" {
+ 
+ extern const char butterfly_desc[];
+ extern const char butterfly_mk_desc[];
++extern const char quarkv1_desc[];
+ void butterfly_initpgm (PROGRAMMER * pgm);
+ void butterfly_mk_initpgm (PROGRAMMER * pgm);
++void quarkv1_initpgm (PROGRAMMER * pgm);
+ 
+ #ifdef __cplusplus
+ }
+diff --git a/pgm_type.c b/pgm_type.c
+index 7724987..b321b49 100644
+--- a/pgm_type.c
++++ b/pgm_type.c
+@@ -82,6 +82,7 @@ const PROGRAMMER_TYPE programmers_types[] = {
+         {"linuxgpio", linuxgpio_initpgm, linuxgpio_desc},
+         {"par", par_initpgm, par_desc},
+         {"pickit2", pickit2_initpgm, pickit2_desc},
++        {"quarkv1", quarkv1_initpgm, quarkv1_desc},
+         {"serbb", serbb_initpgm, serbb_desc},
+         {"stk500", stk500_initpgm, stk500_desc},
+         {"stk500generic", stk500generic_initpgm, stk500generic_desc},
