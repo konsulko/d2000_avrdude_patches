@@ -1,3 +1,6 @@
-# To apply on top of avrdude-6.3.tar.gz
+# Source: d2000_avrdude_patches/avrdude-6.3.tar.gz
+# Sourcedir: avrdude-6.3
+# Patchdir: avrdude-6.3
 
+# To apply on top of avrdude-6.3.tar.gz
 d2000-base.patch
